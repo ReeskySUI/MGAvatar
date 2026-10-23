@@ -4,7 +4,7 @@
  *
  * @package MGAvatar
  * @author 明关
- * @version 1.1.3
+ * @version 1.1.4
  * @link https://blog.mghub.top
  * @license MIT
  */
@@ -142,7 +142,10 @@ JS;
             $avatar = self::globalDefaultAvatar($options);
         }
 
-        echo '<script>(function(){var url=' . json_encode($avatar) . ';';
+        echo '<script>(function(){var url=' . json_encode(
+            $avatar,
+            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP
+        ) . ';';
         echo <<<'JS'
 var img = document.querySelector('.profile-avatar');
 if (img && url) {
@@ -177,7 +180,7 @@ JS;
             );
             if (!empty($row['value'])) {
                 $settings = self::decodeOptions($row['value']);
-                $url = trim((string) ($settings['avatarUrl'] ?? ''));
+                $url = self::sanitizeUrl($settings['avatarUrl'] ?? '');
             }
         } catch (\Throwable $e) {
             $url = '';
@@ -206,8 +209,8 @@ JS;
             return $decoded;
         }
 
-        // PHP serialize 格式
-        $decoded = @unserialize($raw);
+        // PHP serialize 格式（配置值为纯数组，禁止反序列化任何对象）
+        $decoded = @unserialize($raw, ['allowed_classes' => false]);
         if (is_array($decoded)) {
             return $decoded;
         }
@@ -220,7 +223,7 @@ JS;
      */
     private static function globalDefaultAvatar($options)
     {
-        $configured = trim((string) (self::globalConfig($options)->defaultAvatar));
+        $configured = self::sanitizeUrl(self::globalConfig($options)->defaultAvatar);
         if ($configured !== '') {
             return $configured;
         }
@@ -246,6 +249,23 @@ JS;
         }
 
         return $config;
+    }
+
+    /**
+     * 仅允许 http/https 协议的头像地址，非法值或空值返回空串。
+     *
+     * @param mixed $url
+     * @return string
+     */
+    private static function sanitizeUrl($url)
+    {
+        $url = trim((string) $url);
+        if ($url === '') {
+            return '';
+        }
+
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        return in_array($scheme, ['http', 'https'], true) ? $url : '';
     }
 
     private static function h($value)
