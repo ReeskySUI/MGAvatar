@@ -1,5 +1,7 @@
 # MGAvatar
 
+> **仓库已迁移**：本项目已并入 MGHUB Typecho 合集仓库 [MGBlogSuite](https://github.com/ReeskySUI/MGBlogSuite)，后续更新仅在合集仓库发布。本仓库自 v1.1.4 起归档只读，历史版本与发布包继续保留。
+
 Typecho 插件：用 URL 图片彻底替换 Gravatar 头像，无需修改 Typecho 源码。插件自包含，不依赖任何主题，可单独安装使用。
 
 ## 解决的问题
